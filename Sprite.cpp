@@ -10,7 +10,7 @@
 #include "TextureManager.h"
 
 using namespace Microsoft::WRL;
-using namespace DirectX;  //01/16 01 1:01:41
+using namespace DirectX; 
 
 void Sprite::Initialize(SpriteCommon* common, std::wstring textureFilePath)
 {
@@ -27,6 +27,9 @@ void Sprite::Initialize(SpriteCommon* common, std::wstring textureFilePath)
 	CreateMaterial();
 	//行列
 	CreateWVP();
+
+	//画像のサイズを整理する
+	AdjustTextureSize();
 }
 
 void Sprite::Update()
@@ -37,18 +40,45 @@ void Sprite::Update()
 	materialData->color = color_;
 	transform.scale = { size_.x,size_.y,1.0f };
 
+	//アンカーポイント更新
+	float left = 0.0f - anchorPoint.x;
+	float right = 1.0f - anchorPoint.x;
+	float top = 0.0f - anchorPoint.y;
+	float bottom = 1.0f - anchorPoint.y;
+
+	//フリップ
+	if (isFlipX == true) {
+		//左右反転
+		left = -left;
+		right = -right;
+	}
+	if (isFlipY == true) {
+		//上下反転
+		top = -top;
+		bottom = -bottom;
+	}
+
+	//頂点情報
 	//左下
-	vertexData[0].position = { 0.0f,1.0f,0.0f,1.0f };
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	//上
-	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[0].position = { left,bottom,0.0f,1.0f };
+	//上						  
+	vertexData[1].position = { left,top,0.0f,1.0f };
 	//右下
-	vertexData[2].position = { 1.0f,1.0f,0.0f,1.0f };
-	vertexData[2].texcoord = { 1.0f,1.0f };
-	//上2
-	vertexData[3].position = { 1.0f,0.0f,0.0f,1.0f };
-	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[2].position = { right,bottom,0.0f,1.0f };
+	//上2					   
+	vertexData[3].position = { right,top,0.0f,1.0f };
+
+	const DirectX::TexMetadata& metaData = TextureManager::GetInstance()->GetMetaData(textureIndex_);
+	float tex_left = textureLeftTop.x / metaData.width;
+	float tex_right = (textureLeftTop.x + textureSize.x) / metaData.width;
+	float tex_top = textureLeftTop.y / metaData.height;
+	float tex_bottom = (textureLeftTop.y + textureSize.y) / metaData.height;
+
+	//UV座標
+	vertexData[0].texcoord = { tex_left,tex_bottom };
+	vertexData[1].texcoord = { tex_left,tex_top };
+	vertexData[2].texcoord = { tex_right,tex_bottom };
+	vertexData[3].texcoord = { tex_right,tex_top };
 
 	ImGui::Begin("Texture");
 	ImGui::DragFloat3("Pos", &transform.translate.x, 0.1f);
@@ -73,7 +103,7 @@ void Sprite::Draw()
 	//View
 	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 	//Projection
-	//Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, (float)WinApp::window_width / (float)WinApp::window_height, 0.1f, 100.0f);
+	
 	Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0, 0,(float)WinApp::window_width, (float)WinApp::window_height, 0.1f, 100.0f);
 	
 	//WVP
@@ -99,7 +129,7 @@ void Sprite::Draw()
 	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex_));
 
 	//頂点情報のみ描画
-	//dxCommon_->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+	
     //インデックス情報がある場合の描画
 	dxCommon_->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
@@ -177,4 +207,14 @@ void Sprite::CreateWVP()
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
 
 	*wvpData = MakeIdentity4x4();
+}
+
+void Sprite::AdjustTextureSize()
+{
+	const DirectX::TexMetadata& metaData = TextureManager::GetInstance()->GetMetaData(textureIndex_);
+
+	textureSize.x = static_cast<float> (metaData.width);
+	textureSize.y = static_cast<float> (metaData.height);
+
+	size_ = textureSize;
 }

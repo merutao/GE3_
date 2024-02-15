@@ -32,11 +32,7 @@ void Input::Update()
 
     //前回のキー入力を保存
     memcpy(keyPre, key, sizeof(key));
-    // ↑ keyPreの中にkeyの情報をコピーする
-    /*for (int i = 0; i < 256; i++) {
-        keyPre[i] = key[i];
-    }*/
-
+   
     // キーボード情報の取得開始
     keyboard->Acquire();
     // 全キーの入力状態を取得する

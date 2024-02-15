@@ -113,6 +113,17 @@ D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(uint32_t textureInde
 	return data.srvHandleGPU;
 }
 
+const DirectX::TexMetadata& TextureManager::GetMetaData(uint32_t textureIndex)
+{
+	//対象の要素番号がメモリの範囲外を選択していないか確認
+	assert(textureIndex < DirectXCommon::kMaxSRVCount);
+
+	//要素番号のTextureDataを受け取る
+	TextureData& data = textureDatas[textureIndex];
+
+	return data.metaData;
+}
+
 void TextureManager::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
 {
 	//Mata情報を取得
@@ -122,7 +133,8 @@ void TextureManager::UploadTextureData(ID3D12Resource* texture, const DirectX::S
 		//MipMapLevelを指定して各Imageを取得
 		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
 		//Textureに転送
-		HRESULT result = texture->WriteToSubresource(
+		HRESULT result;
+		result = texture->WriteToSubresource(
 			UINT(mipLevel),
 			nullptr, //全領域へコピー
 			img->pixels, //元データアドレス

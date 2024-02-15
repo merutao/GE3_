@@ -42,8 +42,7 @@ private: //メンバ変数
 
 	// キーボードのデバイス
 	ComPtr<IDirectInputDevice8> keyboard;
-	//Microsoft::WRL::ComPtr<IDirectInputDevice8> keyboard;
-
+	
 	 //全キーの状態
 	BYTE key[256] = {};
 	//前回の全キーの状態

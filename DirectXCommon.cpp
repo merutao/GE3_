@@ -77,9 +77,9 @@ void DirectXCommon::PreDraw()
 
     // シザー矩形
     D3D12_RECT scissorRect{};
-    scissorRect.left = 0;                                       // 切り抜き座標左
+    scissorRect.left = 0;                                               // 切り抜き座標左
     scissorRect.right = scissorRect.left + WinApp::window_width;        // 切り抜き座標右
-    scissorRect.top = 0;                                        // 切り抜き座標上
+    scissorRect.top = 0;                                                // 切り抜き座標上
     scissorRect.bottom = scissorRect.top + WinApp::window_height;       // 切り抜き座標下
     // シザー矩形設定コマンドを、コマンドリストに積む
     commandList->RSSetScissorRects(1, &scissorRect);
@@ -381,7 +381,8 @@ ID3D12DescriptorHeap* DirectXCommon::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_
     descriptorHeapDesc.Type = heapType;
     descriptorHeapDesc.NumDescriptors = numDescriptors;
     descriptorHeapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    HRESULT result = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
+    HRESULT result;
+    result = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
     assert(SUCCEEDED(result));
 
     return descriptorHeap;

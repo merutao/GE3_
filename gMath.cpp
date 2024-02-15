@@ -1,4 +1,5 @@
 #include "gMath.h"
+
 // ‰Á–@
 Vector3 Add(Vector3 v1, Vector3 v2) {
 	Vector3 result;

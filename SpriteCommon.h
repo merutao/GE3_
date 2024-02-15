@@ -13,7 +13,7 @@
 class SpriteCommon
 {
 private:
-	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>; 
 
 public:
 	// ‰Šú‰»

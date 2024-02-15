@@ -5,11 +5,12 @@
 #include "SpriteCommon.h"
 #include "Sprite.h"
 
-#include "ImGuiManager.h" 
+#include "ImGuiManager.h"
+#include "TextureManager.h"
 
 #include <vector>
 
-#include "TextureManager.h"
+
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -53,10 +54,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         temp->Initialize(spriteCommon, L"Resources/mario.jpg");
         else if(i%2==1)
         temp->Initialize(spriteCommon, L"Resources/kinopio.jpg");
-        temp->SetPosition({ (float)i * 120,0 });
+        temp->SetPosition({ (float)i * 120,100 });
         sprite.push_back(temp);
     }
-   
 
     // ゲームループ
     while (true) {
@@ -69,7 +69,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         input_->Update();
 
-       
         for (int i = 0; i < 5; i++) {
             sprite[i]->Update();
         }

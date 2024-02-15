@@ -23,7 +23,8 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
 	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
 	//実際に頂点リソースを作る
-	HRESULT result = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&resource));
+	HRESULT result;
+	result = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&resource));
 	assert(SUCCEEDED(result));
 
 	return resource;
@@ -50,7 +51,8 @@ ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMe
 
 	//3.Resourceを生成する
 	ID3D12Resource* resource = nullptr;
-	HRESULT result = device->CreateCommittedResource(
+	HRESULT result;
+	result = device->CreateCommittedResource(
 		&heapPorperties, //Heapの設定
 		D3D12_HEAP_FLAG_NONE, //Heapの特殊な設定。　特になし
 		&resourceDesc, //Resourceの設定

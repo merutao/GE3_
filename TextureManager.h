@@ -31,6 +31,9 @@ public:
 	//指定した要素番号のGPUハンドルを受け取る
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(uint32_t textureIndex); 
 
+	//メタデータ取得
+	const DirectX::TexMetadata& GetMetaData(uint32_t textureIndex);
+
 private:
 	//読み込んだ画像をGPU(シェーダに送る)
 	void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
