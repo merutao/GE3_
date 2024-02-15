@@ -1,8 +1,9 @@
 #pragma once
+
 #include "DirectXCommon.h"
+
 #include <d3d12.h>
 #include <wrl.h>
-
 #include <DirectXMath.h>
 
 #include "SpriteCommon.h"
@@ -47,6 +48,17 @@ public:
 	//描画処理
 	void Draw();
 
+	//Getter/Setter
+	Vector2 GetPosition() { return position; }
+	float GetRotation() { return rotation; }
+	Vector4 GetColor() { return color_; }
+	Vector2 GetSize() { return size_; }
+
+	void SetPosition(Vector2 pos) { position = pos; }
+	void SetRotation(float rot) { rotation = rot; }
+	void SetColor(Vector4 color) { color_ = color; }
+	void SetSize(Vector2 size) { this->size_ = size; }
+
 private:
 	//頂点情報作成
 	void CreateVertex();
@@ -65,6 +77,8 @@ private:
 	ComPtr<ID3D12Resource> vertexResource;
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	//頂点リソースにデータを書き込む
+	VertexData* vertexData = nullptr;
 
 	//インデックス
 	ComPtr<ID3D12Resource> indexResource;
@@ -88,7 +102,10 @@ private:
 
 	//自機
 	Transform transform = { {1,1,1},{0,0,0},{0,0,0} }; 
+	Vector2 position = { 0.0f,0.0f };
+	float rotation = 0;
+	Vector2 size_ = { 1.0f,1.0f };
 
 	//カメラ
-	Transform cameraTransform = { {1,1,1},{0,0,0},{0,0,-5} };
+	Transform cameraTransform = { {1,1,1},{0,0,0},{0,0,-10} };
 };

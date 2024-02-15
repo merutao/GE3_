@@ -49,6 +49,25 @@ void Sprite::Initialize(SpriteCommon* common)
 
 void Sprite::Update()
 {
+	//更新処理
+	transform.translate = { position.x,position.y,0.0f };
+	transform.rotate = { 0.0f,0.0f,rotation };
+	materialData->color = color_;
+	transform.scale = { size_.x,size_.y,1.0f };
+
+	//左下
+	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	//上
+	vertexData[1].position = { -0.5f,0.5f,0.0f,1.0f };
+	vertexData[1].texcoord = { 0.0f,0.0f };
+	//右下
+	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	//上2
+	vertexData[3].position = { 0.5f,0.5f,0.0f,1.0f };
+	vertexData[3].texcoord = { 1.0f,0.0f };
+
 	ImGui::Begin("Texture");
 	ImGui::DragFloat3("Pos", &transform.translate.x, 0.1f);
 
@@ -113,8 +132,6 @@ void Sprite::CreateVertex()
 	//1頂点あたりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-	//頂点リソースにデータを書き込む
-	VertexData* vertexData = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	//左下
