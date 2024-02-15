@@ -4,14 +4,15 @@
 
 #include "BufferResource.h"
 #include "gMath.h"
+#include "Externals/imgui/imgui.h"
 
 using namespace Microsoft::WRL;
 using namespace DirectX;
 
-void Sprite::Initialize(DirectXCommon* dxCommon, SpriteCommon* common)
+void Sprite::Initialize(SpriteCommon* common)
 {
-	dxCommon_ = dxCommon;
 	common_ = common;
+	dxCommon_ = common_->GetDirectXCommon();
 
 	//画像の読み込み
 	DirectX::ScratchImage mipImages = common->LoadTexture(L"Resources/mario.jpg");
@@ -38,16 +39,30 @@ void Sprite::Initialize(DirectXCommon* dxCommon, SpriteCommon* common)
 
 	//頂点情報
 	CreateVertex();
+	//インデックス情報
+	CreateIndex();
 	//色
 	CreateMaterial();
 	//行列
 	CreateWVP();
 }
 
+void Sprite::Update()
+{
+	ImGui::Begin("Texture");
+	ImGui::DragFloat3("Pos", &transform.translate.x, 0.1f);
+
+	ImGui::DragFloat3("UV-Pos", &uvTransform.translate.x, 0.01f, -10.f, 10.f);
+	ImGui::SliderAngle("UV-Rot", &uvTransform.rotate.z);
+	ImGui::DragFloat3("UV-Scale", &uvTransform.scale.x, 0.01f, -10.f, 10.f);
+
+	ImGui::End();
+}
+
 void Sprite::Draw()
 {
 	//Y軸中心に回転
-	transform.rotate.y += 0.00f;
+	//transform.rotate.y += 0.03f;
 	//ワールド
 	//行列変換
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
@@ -63,13 +78,16 @@ void Sprite::Draw()
 	//行列の代入
 	*wvpData = worldViewProjectionMatrix;
 
-	dxCommon_->GetCommandList()->SetGraphicsRootSignature(common_->GetRootSignature());
-	dxCommon_->GetCommandList()->SetPipelineState(common_->GetPipelineState());
+	//UV座標
+	Matrix4x4 uvWorldMatrix = MakeAffineMatrix(uvTransform.scale, uvTransform.rotate, uvTransform.translate);
+	materialData->uvTransform = uvWorldMatrix;
 
-	dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
-	//形状を設定。
-	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// 描画
+	//頂点情報
+	dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+	//インデックス情報
+	dxCommon_->GetCommandList()->IASetIndexBuffer(&indexBufferView);
+
 	//色
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	//行列
@@ -77,18 +95,21 @@ void Sprite::Draw()
 	//画像
 	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
-	dxCommon_->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+	//頂点情報のみ描画
+	//dxCommon_->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+	//インデックス情報がある場合の描画
+	dxCommon_->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 
 void Sprite::CreateVertex()
 {
 	//VertexResourceを生成する
-	vertexResource = CreateBufferResource(dxCommon_->GetDevice(), sizeof(VertexData) * 6);
+	vertexResource = CreateBufferResource(dxCommon_->GetDevice(), sizeof(VertexData) * 4);
 
 	//リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//使用するリソースのサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * 4;
 	//1頂点あたりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -105,26 +126,42 @@ void Sprite::CreateVertex()
 	//右下
 	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
 	vertexData[2].texcoord = { 1.0f,1.0f };
-
-	//左下2
-	vertexData[3].position = { -0.5f,0.5f,0.0f,1.0f };
-	vertexData[3].texcoord = { 0.0f,0.0f };
 	//上2
-	vertexData[4].position = { 0.5f,0.5f,0.0f,1.0f };
-	vertexData[4].texcoord = { 1.0f,0.0f };
-	//右下2
-	vertexData[5].position = { 0.5f,-0.5f,0.0f,1.0f };
-	vertexData[5].texcoord = { 1.0f,1.0f };
+	vertexData[3].position = { 0.5f,0.5f,0.0f,1.0f };
+	vertexData[3].texcoord = { 1.0f,0.0f };
+}
+
+void Sprite::CreateIndex()
+{
+	indexResource = CreateBufferResource(dxCommon_->GetDevice(), sizeof(uint32_t) * 6);
+
+	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * 6;
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+
+	uint32_t* indexData = nullptr;
+	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+
+	//VertexData[0,1,2]の頂点で三角形を一枚作成
+	indexData[0] = 0;
+	indexData[1] = 1;
+	indexData[2] = 2;
+
+	//VertexData[1,3,2]の頂点で三角形を一枚作成
+	indexData[3] = 1;
+	indexData[4] = 3;
+	indexData[5] = 2;
 }
 
 void Sprite::CreateMaterial()
 {
-	materialResource = CreateBufferResource(dxCommon_->GetDevice(), sizeof(XMFLOAT4));
+	materialResource = CreateBufferResource(dxCommon_->GetDevice(), sizeof(MaterialData));
 
-	XMFLOAT4* materialData = nullptr;
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 
-	*materialData = color_;
+	materialData->color = color_;
+	materialData->uvTransform = MakeIdentity4x4();
+
 }
 
 void Sprite::CreateWVP()
