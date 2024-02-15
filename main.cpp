@@ -6,7 +6,10 @@
 #include "Sprite.h"
 
 #include "ImGuiManager.h" 
+
 #include <vector>
+
+#include "TextureManager.h"
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -37,15 +40,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     SpriteCommon* spriteCommon = new SpriteCommon();
     spriteCommon->Initialize(dxCommon_);
 
-    //スプライト
+    //テクスチャマネージャー
+    TextureManager::GetInstance()->Initialize(dxCommon_);
+    TextureManager::GetInstance()->LoadTexture(L"Resources/mario.jpg");
+    TextureManager::GetInstance()->LoadTexture(L"Resources/kinopio.jpg");
+
+    //スプライト 画像
     std::vector< Sprite*> sprite;
     for (int i = 0; i < 5; i++) {
         Sprite* temp = new Sprite();
-        temp->Initialize(spriteCommon);
-        temp->SetPosition({ (float)i * 1,0 });
+        if(i%2==0)
+        temp->Initialize(spriteCommon, L"Resources/mario.jpg");
+        else if(i%2==1)
+        temp->Initialize(spriteCommon, L"Resources/kinopio.jpg");
+        temp->SetPosition({ (float)i * 120,0 });
         sprite.push_back(temp);
     }
-
+   
 
     // ゲームループ
     while (true) {
@@ -58,11 +69,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         input_->Update();
 
+       
         for (int i = 0; i < 5; i++) {
             sprite[i]->Update();
         }
 
-        //更新前処理
+       //更新前処理
         ImGuiManager::CreateCommand();
         dxCommon_->PreDraw();
         spriteCommon->SpritePreDraw();
@@ -78,6 +90,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     for (int i = 0; i < 5; i++) {
         delete sprite[i];
     }
+
+    TextureManager::GetInstance()->Finalize();
+
     delete spriteCommon;
 
     delete imgui;

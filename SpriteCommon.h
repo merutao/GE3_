@@ -13,7 +13,7 @@
 class SpriteCommon
 {
 private:
-	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>; //1:27:35 動画時間
+	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 public:
 	// 初期化
@@ -25,11 +25,6 @@ public:
 	ID3D12PipelineState* GetPipelineState() { return pipelineState.Get(); }
 	DirectXCommon* GetDirectXCommon() { return dxCommon_; }
 
-	//画像読み込み
-	DirectX::ScratchImage LoadTexture(const std::wstring& filePath);
-	//読み込んだ画像をGPU(シェーダに送る)
-	void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
-
 private:
 	IDxcBlob* CompileShader(
 		const std::wstring& filePath,
@@ -40,9 +35,10 @@ private:
 	);
 
 private:
-	//Vector4 color = { 1,0,0,1 };
+	
 	DirectXCommon* dxCommon_ = nullptr;
 
 	ComPtr<ID3D12RootSignature> rootSignature;
 	ComPtr<ID3D12PipelineState> pipelineState;
 };
+
