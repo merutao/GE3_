@@ -58,25 +58,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         input_->Update();
 
-        ////移動
-        //Vector2 pos = sprite->GetPosition();
-        //pos.x += 0.01f;
-        //sprite->SetPosition(pos);
-        ////回転
-        //float rot = sprite->GetRotation();
-        //rot += 0.1f;
-        //sprite->SetRotation(rot);
-        ////色
-        //Vector4 color = sprite->GetColor();
-        //color.x -= 0.01f;
-        //if (color.x < 0) {
-        //    color.x = 1.0f;
-        //}
-        //sprite->SetColor(color);
-        ////サイズ
-        //Vector2 size = sprite->GetSize();
-        //size.y += 0.01f;
-        //sprite->SetSize(size);
         for (int i = 0; i < 5; i++) {
             sprite[i]->Update();
         }
